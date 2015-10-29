@@ -2,101 +2,6 @@
 <Collection name="Login Lightbox" guid="{E003BE67-0AF0-41C3-A322-23F81B25746C}" system="No" updatable="Yes" blockNavigatorNode="Yes">
 	<HelpLink>http://support.contensive.com/Login-Lightbox</HelpLink>
 	<Help></Help>
-	<Addon name="Login Form Sample" guid="{E23C5941-19C2-4164-BCFD-83D6DD42F651}" type="Add-on">
-		<Copy></Copy>
-		<CopyText></CopyText>
-		<ActiveXProgramID></ActiveXProgramID>
-		<DotNetClass></DotNetClass>
-		<ArgumentList></ArgumentList>
-		<AsAjax>No</AsAjax>
-		<Filter>No</Filter>
-		<Help></Help>
-		<HelpLink></HelpLink>
-		<Icon Link="" width="0" height="0" sprites="0" />
-		<InIframe>No</InIframe>
-		<BlockEditTools>Yes</BlockEditTools>
-		<FormXML></FormXML>
-		<IsInline>No</IsInline>
-		<JavascriptOnLoad></JavascriptOnLoad>
-		<JavascriptInHead></JavascriptInHead>
-		<JavascriptBodyEnd></JavascriptBodyEnd>
-		<MetaDescription></MetaDescription>
-		<OtherHeadTags></OtherHeadTags>
-		<Content>No</Content>
-		<Template>No</Template>
-		<Email>No</Email>
-		<Admin>No</Admin>
-		<OnPageEndEvent>No</OnPageEndEvent>
-		<OnPageStartEvent>No</OnPageStartEvent>
-		<OnBodyStart>No</OnBodyStart>
-		<OnBodyEnd>No</OnBodyEnd>
-		<RemoteMethod>No</RemoteMethod>
-		<ProcessRunOnce>No</ProcessRunOnce>
-		<ProcessInterval>0</ProcessInterval>
-		<PageTitle></PageTitle>
-		<RemoteAssetLink></RemoteAssetLink>
-		<Styles><![CDATA[
-/*
-* styles in a shared style set to all public pages.
-* This makes sure the style is there before the html shows up.
-* important this this case because the lightbox measures the height on load
-*/
-]]></Styles>
-		<Scripting Language="" EntryPoint="" Timeout="5000">
-			<Code><![CDATA[function m
-	dim block
-	dim button
-	dim loginSuccess
-	dim username
-	dim password
-	dim passwordEmail
-	dim action
-	'
-	action = cp.request.querystring
-	'action = cp.utils.modifyQueryString( action, "method", "", false )
-	button = lcase( trim( cp.doc.getText( "button" )))
-	username = cp.doc.getText( "loginUsername" )
-	password = cp.doc.getText( "loginPassword" )
-	passwordEmail = cp.doc.getText( "passwordEmail" )
-	loginSuccess = false
-	if cp.user.isauthenticated Then
-		loginMessage = "<p>You are currently logged in as " & cp.user.name & ". Click <a href=""?method=logout"">here to logout</a>.</p>"
-	end if
-	if button="login" then
-		if cp.user.login( username, password) then
-			loginSuccess = true
-		else
-			loginMessage = "<p>There was a problem logging in. Please try again.</p>"
-		end if
-	elseif button="send password" then
-		if ( passwordEmail="" ) then
-			loginMessage = "<p>To receive your password, please enter an email.</p>"
-		else
-			loginMessage = "<p>Usernames and passwords matching this email have been sent.</p>"
-			call cp.email.sendPassword( passwordEmail )
-		end if
-	end if
-	if loginSuccess then
-		'if not cp.doc.getBoolean( "nocache" ) then
-		'	call cp.response.redirect( "#" )
-		'end if
-		m = ""
-	else
-		set block = cp.blockNew()
-		call block.openLayout( "{B229A288-93CE-43D8-8C2D-6DF30810A188}" )
-		if loginMessage<>"" then
-			call block.setInner( ".loginMessage", loginMessage )
-		else
-			call block.setOuter( ".loginMessage", "" )
-		end if
-		m = m & block.getHtml()
-		m = cp.html.form( m,,,,action )
-	end if
-end function
-]]></Code>
-		</Scripting>
-		<IncludeSharedStyle name="Login Form Sample Styles" guid="{6C7DD530-6CFC-4C02-BEB7-DCFDBA623800}"/>
-	</Addon>
 	<Addon name="Login Lightbox" guid="{C9A89452-D364-4865-ABC4-C7B17AB72DB8}" type="Add-on">
 		<Copy></Copy>
 		<CopyText></CopyText>
@@ -121,12 +26,9 @@ end function
 //	called from both the page and ajax content updates
 // --------------------------------
 //
-function llBindEvents(){
-	jQuery(document).ready(function(){
-		jQuery('body').on('click', '.loginLightbox', function(){llOpenLoginLightbox()});
-		//jQuery('.loginLightbox').unbind('click').click( llOpenLoginLightbox );
-	})
-}
+jQuery(document).ready(function(){
+	jQuery('body').on('click', '.loginLightbox', function(){ return llOpenLoginLightbox()});
+})
 //
 // --------------------------------
 // bind the html form to an ajax submit
@@ -137,7 +39,7 @@ function llBindForm()
 	// prepare form for ajaxForm serialization
 	jQuery('#loginLightboxCon form').ajaxForm();
 	// bind submit to handler
-	jQuery('#loginLightboxCon form').submit(llFormSubmit);
+	jQuery('#loginLightboxCon form').unbind('submit').submit(llFormSubmit);
 }
 //
 // --------------------------------
@@ -155,12 +57,13 @@ function llLoginHandlerComplete( response, destinationId )
 	if ( test=='' )
 	{
 		urlFix = window.location.href;
-		urlFix = urlFix.replace(/method=/i,'blockedMethod=');
+		urlFix = urlFix.replace(/method=logout/i,'a=a');
 		window.location = urlFix;
 	}
 	else
 	{
-		jQuery('#loginLightboxFormId').html(response);
+		jQuery('#loginLightboxCon').html(response);
+		//jQuery('#loginLightboxFormId').html(response);
 		jQuery.fancybox.resize();
 		llBindForm();
 	}
@@ -173,7 +76,6 @@ function llLoginHandlerComplete( response, destinationId )
 function llOpenLoginLightbox()
 {
 	cj.ajax.addonCallback('loginLightboxHandler','',llBuildLightbox);
-	//cj.remote({'method':'loginLightboxHandler','callback':llBuildLightbox});
 	return false;
 }
 function llBuildLightbox( lightboxHtml )
@@ -202,20 +104,8 @@ function llFormSubmit(e)
 	jQuery(e.target).attr('id','loginLightboxFormId');
 	var queryString = jQuery(e.target).formSerialize();
 	cj.ajax.addonCallback('loginLightboxHandler',queryString,llLoginHandlerComplete,'loginLightboxCon');
-	//cj.remote({
-	//	'method':'loginLightboxHandler'
-	//	,'queryString': queryString
-	//	,'destinationId':'loginLightboxCon'
-	//	,'callback':llLoginHandlerComplete
-	//});
 	return false;
 }
-//
-// --------------------------------
-// initialize
-// --------------------------------
-//
-llBindEvents();
 ]]></JavascriptInHead>
 		<JavascriptBodyEnd></JavascriptBodyEnd>
 		<MetaDescription></MetaDescription>
@@ -233,7 +123,8 @@ llBindEvents();
 		<ProcessInterval>0</ProcessInterval>
 		<PageTitle></PageTitle>
 		<RemoteAssetLink></RemoteAssetLink>
-		<Styles><![CDATA[/*
+		<Styles><![CDATA[
+/*
 * --------------------------------------------
 * login link
 * --------------------------------------------
@@ -267,7 +158,7 @@ display:table;
 		<IsInline>No</IsInline>
 		<JavascriptOnLoad></JavascriptOnLoad>
 		<JavascriptInHead></JavascriptInHead>
-		<JavascriptBodyEnd><![CDATA[llBindEvents();]]></JavascriptBodyEnd>
+		<JavascriptBodyEnd></JavascriptBodyEnd>
 		<MetaDescription></MetaDescription>
 		<OtherHeadTags></OtherHeadTags>
 		<Content>No</Content>
@@ -286,12 +177,24 @@ display:table;
 		<Styles></Styles>
 		<Scripting Language="" EntryPoint="" Timeout="5000">
 			<Code><![CDATA[function m
-	dim addonId
-	addonId = cp.site.getInteger( "LOGIN PAGE ADDONID" )
-	if addonId=0 then
-		m = ccLib.getLoginForm()
-	else
-		m = cp.utils.executeAddon( addonId )
+	dim addonId, username, password, prefix, showLogin
+	prefix = cp.doc.gettext("ccFormSN")
+	username = cp.doc.gettext(prefix&"username")
+	password = cp.doc.gettext(prefix&"password")
+	showLogin = true
+	if username<>"" then
+		if CP.User.Login(username,password) then
+			' login success, return blank
+			showLogin = false
+		end if
+	end if
+	if showLogin then
+		addonId = cp.site.getInteger( "LOGIN PAGE ADDONID" )
+		if addonId=0 then
+			m = ccLib.getLoginForm()
+		else
+			m = cp.utils.executeAddon( addonId )
+		end if
 	end if
 end function]]></Code>
 		</Scripting>
@@ -337,135 +240,6 @@ call cp.response.redirect("?")
 end function]]></Code>
 		</Scripting>
 	</Addon>
-	<data>
-		<record content="layouts" guid="{B229A288-93CE-43D8-8C2D-6DF30810A188}" name="Login Lightbox Sample Login Form">
-			<field name="ACTIVE">True</field>
-			<field name="SORTORDER"></field>
-			<field name="Layout"><![CDATA[<div class="loginCon">
-	<div class="loginInnerCon">
-		<div class="loginMessage"></div>
-		<p>To login, enter your username and password.</p>
-		<div class="loginInputRow">
-			<label class="loginLabel" for="loginUsername">Username</label>
-			<input type="text" class="loginUsername" name="loginUsername">
-		</div>
-		<div class="loginInputRow">
-			<label class="loginLabel" for="loginPassword">Password</label>
-			<input type="password" class="loginPassword" name="loginPassword">
-		</div>
-		<div class="loginbuttonRow">
-			<input type="submit" name="button" value="  Login  ">
-		</div>
-		<p>Forget your password? If you are a member of this site and can not remember your password, enter your email address below and we will email your matching username and password.</p>
-		<div class="loginInputRow">
-			<label class="loginLabel" for="passwordEmail">Email</label>
-			<input type="text" class="passwordEmail" name="passwordEmail">
-		</div>
-		<div class="loginbuttonRow">
-			<input type="submit" name="button" value="  Send Password  ">
-		</div>
-	</div>
-</div>]]></field>
-			<field name="StylesFilename"></field>
-		</record>
-		<record content="shared styles" guid="{6C7DD530-6CFC-4C02-BEB7-DCFDBA623800}" name="Login Form Sample Styles">
-			<field name="ACTIVE">True</field>
-			<field name="SORTORDER"></field>
-			<field name="StyleFilename"><![CDATA[.loginCon
-{
-width: 300px;
-background-color: white;
-border: 1px solid #444;
-border-radius: 5px;
-}
-.loginInnerCon
-{
-width: 260px;
-margin: 20px;
-}
-.loginInnerCon .loginInputRow
-{
-	margin: 10px 0 0 0;
-}
-.loginInnerCon .loginLabel
-{
-	display: inline-block;
-	width: 85px;
-	text-align: right;
-}
-.loginInnerCon .loginUsername
-{
-}
-.loginInnerCon .loginPassword
-{
-}
-.loginInnerCon .loginEmail
-{
-}
-.loginInnerCon .loginbuttonRow
-{
-	margin: 20px 0 10px 0;
-	padding: 2px;
-	background-color: #579;
-}
-.loginInnerCon .loginbuttonRow input
-{
-}
-.loginInnerCon .loginMessage
-{
-	color: #f00;
-}
-]]></field>
-			<field name="AlwaysInclude">True</field>
-			<field name="Prefix"></field>
-			<field name="Suffix"></field>
-		</record>
-	</data>
-	<SharedStyle Name="Login Form Sample Styles" guid="{6C7DD530-6CFC-4C02-BEB7-DCFDBA623800}" alwaysInclude="True" prefix="" suffix="" sortOrder=""><![CDATA[.loginCon
-{
-width: 300px;
-background-color: white;
-border: 1px solid #444;
-border-radius: 5px;
-}
-.loginInnerCon
-{
-width: 260px;
-margin: 20px;
-}
-.loginInnerCon .loginInputRow
-{
-	margin: 10px 0 0 0;
-}
-.loginInnerCon .loginLabel
-{
-	display: inline-block;
-	width: 85px;
-	text-align: right;
-}
-.loginInnerCon .loginUsername
-{
-}
-.loginInnerCon .loginPassword
-{
-}
-.loginInnerCon .loginEmail
-{
-}
-.loginInnerCon .loginbuttonRow
-{
-	margin: 20px 0 10px 0;
-	padding: 2px;
-	background-color: #579;
-}
-.loginInnerCon .loginbuttonRow input
-{
-}
-.loginInnerCon .loginMessage
-{
-	color: #f00;
-}
-]]></SharedStyle>
 	<ImportCollection name="Fancy Box">{B59F4D89-ADD9-4FEA-9D3F-B5A44DFD8F39}</ImportCollection>
 	<ImportCollection name="jQuery ajaxForm">{1757AEF4-DEF0-4226-B1AD-B2F21FCD6742}</ImportCollection>
 </Collection>

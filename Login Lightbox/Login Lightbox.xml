@@ -16,8 +16,8 @@
 		<InIframe>No</InIframe>
 		<BlockEditTools>Yes</BlockEditTools>
 		<FormXML></FormXML>
-		<IncludeAddon name="Fancy Box" guid="{24C2DBCF-3D84-44B6-A5F7-C2DE7EFCCE3D}"/>
 		<IncludeAddon name="jQuery ajaxForm" guid="{1DE8A882-5209-4571-8903-6A304CF7627A}"/>
+		<IncludeAddon name="Fancy Box" guid="{24C2DBCF-3D84-44B6-A5F7-C2DE7EFCCE3D}"/>
 		<IsInline>No</IsInline>
 		<JavascriptOnLoad></JavascriptOnLoad>
 		<JavascriptInHead><![CDATA[//
@@ -110,8 +110,8 @@ function llFormSubmit(e)
 		<JavascriptBodyEnd></JavascriptBodyEnd>
 		<MetaDescription></MetaDescription>
 		<OtherHeadTags></OtherHeadTags>
-		<Content>No</Content>
-		<Template>No</Template>
+		<Content>Yes</Content>
+		<Template>Yes</Template>
 		<Email>No</Email>
 		<Admin>No</Admin>
 		<OnPageEndEvent>No</OnPageEndEvent>
@@ -176,19 +176,30 @@ display:table;
 		<RemoteAssetLink></RemoteAssetLink>
 		<Styles></Styles>
 		<Scripting Language="" EntryPoint="" Timeout="5000">
-			<Code><![CDATA[function m
-	dim addonId, username, password, prefix, showLogin
+			<Code><![CDATA[
+function m
+	dim addonId
+	dim username, password, prefix, needLoginBox, email
 	prefix = cp.doc.gettext("ccFormSN")
 	username = cp.doc.gettext(prefix&"username")
 	password = cp.doc.gettext(prefix&"password")
-	showLogin = true
-	if username<>"" then
-		if CP.User.Login(username,password) then
-			' login success, return blank
-			showLogin = false
+	email = cp.doc.gettext(prefix&"email")
+	needLoginBox = false
+	if  (username = "")  then
+		if ( email = "" ) then
+			'
+		else
+			cp.email.sendPassword( email )
+		end if
+		needLoginBox = true
+	else
+		if  (CP.User.Login(username,password)) then
+			needLoginBox = false
+		else
+			needLoginBox = true
 		end if
 	end if
-	if showLogin then
+	if  needLoginBox then
 		addonId = cp.site.getInteger( "LOGIN PAGE ADDONID" )
 		if addonId=0 then
 			m = ccLib.getLoginForm()
@@ -240,6 +251,6 @@ call cp.response.redirect("?")
 end function]]></Code>
 		</Scripting>
 	</Addon>
-	<ImportCollection name="Fancy Box">{B59F4D89-ADD9-4FEA-9D3F-B5A44DFD8F39}</ImportCollection>
 	<ImportCollection name="jQuery ajaxForm">{1757AEF4-DEF0-4226-B1AD-B2F21FCD6742}</ImportCollection>
+	<ImportCollection name="Fancy Box">{B59F4D89-ADD9-4FEA-9D3F-B5A44DFD8F39}</ImportCollection>
 </Collection>

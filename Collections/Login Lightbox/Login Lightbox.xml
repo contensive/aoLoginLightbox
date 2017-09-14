@@ -1,0 +1,269 @@
+<?xml version="1.0" encoding="windows-1252"?>
+<Collection name="Login Lightbox" guid="{E003BE67-0AF0-41C3-A322-23F81B25746C}" system="No" updatable="Yes" blockNavigatorNode="Yes">
+	<HelpLink>http://support.contensive.com/Login-Lightbox</HelpLink>
+	<Help></Help>
+	<Addon name="Login Lightbox" guid="{C9A89452-D364-4865-ABC4-C7B17AB72DB8}" type="Add-on">
+		<Copy></Copy>
+		<CopyText></CopyText>
+		<ActiveXProgramID></ActiveXProgramID>
+		<DotNetClass></DotNetClass>
+		<ArgumentList></ArgumentList>
+		<AsAjax>No</AsAjax>
+		<Filter>No</Filter>
+		<Help></Help>
+		<HelpLink></HelpLink>
+		<Icon Link="" width="0" height="0" sprites="0" />
+		<InIframe>No</InIframe>
+		<BlockEditTools>No</BlockEditTools>
+		<FormXML></FormXML>
+		<IncludeAddon name="jQuery ajaxForm" guid="{1DE8A882-5209-4571-8903-6A304CF7627A}"/>
+		<IncludeAddon name="Fancy Box" guid="{24C2DBCF-3D84-44B6-A5F7-C2DE7EFCCE3D}"/>
+		<IsInline>No</IsInline>
+		<JavascriptOnLoad></JavascriptOnLoad>
+		<JavascriptInHead><![CDATA[//
+// --------------------------------
+// Bind all events
+//	called from both the page and ajax content updates
+// --------------------------------
+//
+jQuery(document).ready(function(){
+	jQuery('body').on('click', '.loginLightbox', function(){ return llOpenLoginLightbox()});
+})
+//
+// --------------------------------
+// bind the html form to an ajax submit
+// --------------------------------
+//
+function llBindForm()
+{
+	// prepare form for ajaxForm serialization
+	jQuery('#loginLightboxCon form').ajaxForm();
+	// bind submit to handler
+	jQuery('#loginLightboxCon form').unbind('submit').submit(llFormSubmit);
+}
+//
+// --------------------------------
+// Login Handler Complete
+// --------------------------------
+//
+function llLoginHandlerComplete( response, destinationId )
+{
+	var urlFix,test;
+	test = response;
+	test = test.replace( ' ','' );
+	test = test.replace( '\n','' );
+	test = test.replace( '\t','' );
+	test = test.replace( '\r','' );
+	if ( test=='' )
+	{
+		urlFix = window.location.href;
+		urlFix = urlFix.replace(/method=logout/i,'a=a');
+		window.location = urlFix;
+	}
+	else
+	{
+		jQuery('#loginLightboxCon').html(response);
+		//jQuery('#loginLightboxFormId').html(response);
+		jQuery.fancybox.resize();
+		llBindForm();
+	}
+}
+//
+// --------------------------------
+// lightbox open
+// --------------------------------
+//
+function llOpenLoginLightbox()
+{
+	cj.ajax.addonCallback('loginLightboxHandler','',llBuildLightbox);
+	return false;
+}
+function llBuildLightbox( lightboxHtml )
+{
+jQuery.fancybox.open({
+    src  : '<div id="loginLightboxCon" custom="asdf">'+lightboxHtml+'</div>',
+    type : 'html',
+    opts : {
+        'scrolling' : 'no',
+        'content' : '<div id="loginLightboxCon" custom="asdf">'+lightboxHtml+'</div>',
+        'transitionIn' : 'fade',
+        'transitionOut' : 'fade',
+        'afterShow' : function(){
+            //jQuery.fancybox.update();
+            llBindForm();
+            console.info( 'done!' );
+        }
+    }
+})
+//	jQuery.fancybox.open({
+//		'scrolling' : 'no',
+//		'content' : '<div id="loginLightboxCon" custom="asdf">'+lightboxHtml+'</div>',
+//		'transitionIn' : 'fade',
+//		'transitionOut' : 'fade',
+//		'onComplete' : function(){
+//			jQuery.fancybox.resize();
+//			llBindForm();
+//			}
+//	});
+}
+
+//
+// --------------------------------
+//  submit the form
+// --------------------------------
+//
+function llFormSubmit(e)
+{
+	e.preventDefault();
+	jQuery(e.target).attr('id','loginLightboxFormId');
+	var queryString = jQuery(e.target).formSerialize();
+	cj.ajax.addonCallback('loginLightboxHandler',queryString,llLoginHandlerComplete,'loginLightboxCon');
+	return false;
+}
+]]></JavascriptInHead>
+		<JavascriptBodyEnd></JavascriptBodyEnd>
+		<MetaDescription></MetaDescription>
+		<OtherHeadTags></OtherHeadTags>
+		<Content>Yes</Content>
+		<Template>Yes</Template>
+		<Email>No</Email>
+		<Admin>No</Admin>
+		<OnPageEndEvent>No</OnPageEndEvent>
+		<OnPageStartEvent>No</OnPageStartEvent>
+		<OnBodyStart>No</OnBodyStart>
+		<OnBodyEnd>Yes</OnBodyEnd>
+		<RemoteMethod>No</RemoteMethod>
+		<ProcessRunOnce>No</ProcessRunOnce>
+		<ProcessInterval>0</ProcessInterval>
+		<PageTitle></PageTitle>
+		<RemoteAssetLink></RemoteAssetLink>
+		<Styles><![CDATA[/*
+* --------------------------------------------
+* login link
+* --------------------------------------------
+*/
+.loginLightbox
+{
+cursor: pointer;
+}
+
+#loginLightboxCon
+{
+/* width: 300px; */
+/* display:table; */
+}]]></Styles>
+		<Scripting Language="" EntryPoint="" Timeout="5000"/>
+	</Addon>
+	<Addon name="loginLightboxHandler" guid="{68016A07-B31F-400A-9CEB-78D11C3CA9C5}" type="Add-on">
+		<Copy></Copy>
+		<CopyText></CopyText>
+		<ActiveXProgramID></ActiveXProgramID>
+		<DotNetClass></DotNetClass>
+		<ArgumentList></ArgumentList>
+		<AsAjax>No</AsAjax>
+		<Filter>No</Filter>
+		<Help></Help>
+		<HelpLink></HelpLink>
+		<Icon Link="" width="0" height="0" sprites="0" />
+		<InIframe>No</InIframe>
+		<BlockEditTools>No</BlockEditTools>
+		<FormXML></FormXML>
+		<IsInline>No</IsInline>
+		<JavascriptOnLoad></JavascriptOnLoad>
+		<JavascriptInHead></JavascriptInHead>
+		<JavascriptBodyEnd></JavascriptBodyEnd>
+		<MetaDescription></MetaDescription>
+		<OtherHeadTags></OtherHeadTags>
+		<Content>No</Content>
+		<Template>No</Template>
+		<Email>No</Email>
+		<Admin>No</Admin>
+		<OnPageEndEvent>No</OnPageEndEvent>
+		<OnPageStartEvent>No</OnPageStartEvent>
+		<OnBodyStart>No</OnBodyStart>
+		<OnBodyEnd>No</OnBodyEnd>
+		<RemoteMethod>Yes</RemoteMethod>
+		<ProcessRunOnce>No</ProcessRunOnce>
+		<ProcessInterval>0</ProcessInterval>
+		<PageTitle></PageTitle>
+		<RemoteAssetLink></RemoteAssetLink>
+		<Styles></Styles>
+		<Scripting Language="" EntryPoint="" Timeout="5000">
+			<Code><![CDATA[
+function m
+	dim addonId
+	dim username, password, prefix, needLoginBox, email
+	prefix = cp.doc.gettext("ccFormSN")
+	username = cp.doc.gettext(prefix&"username")
+	password = cp.doc.gettext(prefix&"password")
+	email = cp.doc.gettext(prefix&"email")
+	needLoginBox = false
+	if  (username = "")  then
+		if ( email = "" ) then
+			'
+		else
+			cp.email.sendPassword( email )
+		end if
+		needLoginBox = true
+	else
+		if  (CP.User.Login(username,password)) then
+			needLoginBox = false
+		else
+			needLoginBox = true
+		end if
+	end if
+	if  needLoginBox then
+		addonId = cp.site.getInteger( "LOGIN PAGE ADDONID" )
+		if addonId=0 then
+			m = ccLib.getLoginForm()
+		else
+			m = cp.utils.executeAddon( addonId )
+		end if
+	end if
+end function]]></Code>
+		</Scripting>
+	</Addon>
+	<Addon name="Logout" guid="{2F7A9195-43C1-4448-85AB-54C3BC65F664}" type="Add-on">
+		<Copy></Copy>
+		<CopyText></CopyText>
+		<ActiveXProgramID></ActiveXProgramID>
+		<DotNetClass></DotNetClass>
+		<ArgumentList></ArgumentList>
+		<AsAjax>No</AsAjax>
+		<Filter>No</Filter>
+		<Help></Help>
+		<HelpLink></HelpLink>
+		<Icon Link="" width="0" height="0" sprites="0" />
+		<InIframe>No</InIframe>
+		<BlockEditTools>No</BlockEditTools>
+		<FormXML></FormXML>
+		<IsInline>No</IsInline>
+		<JavascriptOnLoad></JavascriptOnLoad>
+		<JavascriptInHead></JavascriptInHead>
+		<JavascriptBodyEnd></JavascriptBodyEnd>
+		<MetaDescription></MetaDescription>
+		<OtherHeadTags></OtherHeadTags>
+		<Content>No</Content>
+		<Template>No</Template>
+		<Email>No</Email>
+		<Admin>No</Admin>
+		<OnPageEndEvent>No</OnPageEndEvent>
+		<OnPageStartEvent>No</OnPageStartEvent>
+		<OnBodyStart>No</OnBodyStart>
+		<OnBodyEnd>No</OnBodyEnd>
+		<RemoteMethod>No</RemoteMethod>
+		<ProcessRunOnce>No</ProcessRunOnce>
+		<ProcessInterval>0</ProcessInterval>
+		<PageTitle></PageTitle>
+		<RemoteAssetLink></RemoteAssetLink>
+		<Styles></Styles>
+		<Scripting Language="" EntryPoint="" Timeout="5000">
+			<Code><![CDATA[function m
+call cp.user.logout()
+call cp.response.redirect("?")
+end function]]></Code>
+		</Scripting>
+	</Addon>
+	<ImportCollection name="Fancy Box">{B59F4D89-ADD9-4FEA-9D3F-B5A44DFD8F39}</ImportCollection>
+	<ImportCollection name="JQuery">{A435BF70-041B-43D1-8A8D-5D9D59A7FCD0}</ImportCollection>
+</Collection>
